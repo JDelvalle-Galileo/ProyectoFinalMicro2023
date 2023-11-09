@@ -45,8 +45,8 @@ int main(void){
 
 	USART_putString("\n\r-------------------------------------------------------------------------\n\r");
 	USART_putString("               Proyecto Final Microprocesadores 2023       \n\r");
-	USART_putString("       Julio Del Valle - 21000492, Jose Luis Díaz - XXXXXXXX                 \n\r");
-	USART_putString("          Diego Ventura - XXXXXXXX, Jose Ortiz - XXXXXXXX                    \n\r");
+	USART_putString("       Julio Del Valle - 21000492, Jose Luis Díaz - 21000111                 \n\r");
+	USART_putString("          Diego Ventura - 20000164, Jose Ortiz - 20006195                    \n\r");
 	USART_putString(">> ");
 	
 	while(1){
@@ -148,33 +148,33 @@ void read_command(void){
         tokenizer();
 			
 
-            if(!strcmp(tokens[0],"RD")){
+            if(!strcmp(tokens[0],"RD")||!strcmp(tokens[0],"rd")){
                 registerDisplay();
-            }else if(!strcmp(tokens[0],"RM")){
+            }else if(!strcmp(tokens[0],"RM")||!strcmp(tokens[0],"rm")){
                 registerModify();
-            } else if(!strcmp(tokens[0],"MD")){
+            } else if(!strcmp(tokens[0],"MD")||!strcmp(tokens[0],"md")){
                 memoryDisplay();
-            } else if(!strcmp(tokens[0],"MM")){
+            } else if(!strcmp(tokens[0],"MM")||!strcmp(tokens[0],"mm")){
                 memoryModify();
-            } else if(!strcmp(tokens[0],"BF")){
+            } else if(!strcmp(tokens[0],"BF")||!strcmp(tokens[0],"bf")){
                 blockFill();
-            } else if(!strcmp(tokens[0],"RUN")){
+            } else if(!strcmp(tokens[0],"RUN")||!strcmp(tokens[0],"run")){
                 run();
-            } else if(!strcmp(tokens[0],"CALL")){
+            } else if(!strcmp(tokens[0],"CALL")||!strcmp(tokens[0],"call")){
                 call();
-            } else if(!strcmp(tokens[0],"IOMAP")){
+            } else if(!strcmp(tokens[0],"IOMAP")||!strcmp(tokens[0],"iomap")){
                 ioMap();
-            } else if(!strcmp(tokens[0],"IOUNMAP")){
+            } else if(!strcmp(tokens[0],"IOUNMAP")||!strcmp(tokens[0],"iounmap")){
                 ioUnmap();
-            } else if(!strcmp(tokens[0],"SEGMENT")){
+            } else if(!strcmp(tokens[0],"SEGMENT")||!strcmp(tokens[0],"segment")){
                 segmentOut();
-            } else if(!strcmp(tokens[0],"LCD")){
+            } else if(!strcmp(tokens[0],"LCD")||!strcmp(tokens[0],"lcd")){
                 lcdPrint();
-            }else if(!strcmp(tokens[0],"clear")){
+            }else if(!strcmp(tokens[0],"clear")||!strcmp(tokens[0],"CLEAR")){
                 USART_putString("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
             }else{
                 USART_putString("¡Comando indefinido! \r\n");
-            }           
+            }
 
         USART_putString("\n>> ");
         cmd_ready = 0;
