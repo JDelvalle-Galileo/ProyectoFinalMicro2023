@@ -6,7 +6,7 @@
 void USART_config(uint32_t baudrate);
 void USART_Send(char c);
 void USART_putString(char * string);
-void USART2_Enable_Pins(uint32_t baudrate);
 void tokenizer(void);
+void registerDisplay(void);
 
 #endif /* __FUNC_UART_H__ */

@@ -399,6 +399,11 @@
               <FileType>1</FileType>
               <FilePath>.\funciones.c</FilePath>
             </File>
+            <File>
+              <FileName>funciones.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\funciones.s</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -413,6 +418,21 @@
               <FileName>func_uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\func_uart.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Nokia</GroupName>
+          <Files>
+            <File>
+              <FileName>Nokia5110.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Nokia5110.c</FilePath>
+            </File>
+            <File>
+              <FileName>Nokia5110.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Nokia5110.h</FilePath>
             </File>
           </Files>
         </Group>

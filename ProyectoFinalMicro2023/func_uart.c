@@ -10,17 +10,12 @@ uint8_t cmd_ready = 0;
 char tx_buffer[64];
 char rx_buffer[32];
 
-char * tokens[] = {" "," "," "," "};
-
-
-void USART_command_read(){
-	
-			
-}
+char * tokens[] = {" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "};
 
 
 
-void USART_config(uint32_t baudrate){
+
+/*void USART_config(uint32_t baudrate){
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;						//Clock Enbale GPIOA
 	RCC->APB1ENR |= RCC_APB1ENR_USART2EN;					//Clock Enbale USART2
 
@@ -30,34 +25,32 @@ void USART_config(uint32_t baudrate){
 	
 	USART2->BRR = (uint32_t)(SystemCoreClock/baudrate);  //round( 8MHz/115200)
 	USART2->CR1 |= USART_CR1_TE + USART_CR1_RE;					// Habiliar recepcion y transmision
-	USART2->CR1 |= USART_CR1_RXNEIE;										// Interrupción recepcion
+	USART2->CR1 |= USART_CR1_RXNEIE;										// Interrupciï¿½n recepcion
 	USART2->CR1 |= USART_CR1_UE;												// Habilitar modulo UART (puerto serial)
 	
 	NVIC_EnableIRQ(USART2_IRQn);
+}*/
+
+void USART_config(uint32_t baudrate){
+	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;						//Clock Enbale GPIOA
+	RCC->APB2ENR |= RCC_APB2ENR_USART1EN;					//Clock Enbale USART1
+
+	GPIOA->MODER |= (0x02<<18) | (0x02<<20);				//Alternate Function PA9 & PA10
+	GPIOA->AFR[1] |= (0x07<<4) | (0x07<<8);					//PA9 & pa10 as RX2
+	
+	USART1->BRR = (uint32_t)(SystemCoreClock/baudrate);  //round( 8MHz/115200)
+	USART1->CR1 |= USART_CR1_TE + USART_CR1_RE;					// Habiliar recepcion y transmision
+	USART1->CR1 |= USART_CR1_RXNEIE;										// Interrupciï¿½n recepcion
+	USART1->CR1 |= USART_CR1_UE;												// Habilitar modulo UART (puerto serial)
+	
+	NVIC_EnableIRQ(USART1_IRQn);
 }
 
 
-//PA2 USART2_TX y PA15 USART2_RX		//Ambos son funcion 7
-void USART2_Enable_Pins(uint32_t baudrate){
-	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;	//Habilitamos reloj a GPIOA
-	RCC->APB1ENR |= RCC_APB1ENR_USART2EN; //Clock Enbale USART2
-	
-	GPIOA->MODER |= (2<<4)|(2<<30); //Funci?n alternativa del pin 2 y 15
-	GPIOA->AFR[0] |= (7<<8); //Funccion alternativa 7 del pin 2 
-	GPIOA->AFR[1] |= (7<<28); //Funccion alternativa 7 del pin 15 
-	
-	USART2->BRR = (uint32_t)(SystemCoreClock/baudrate);  //round( 64MHz/115200)
-	USART2->CR1 |= USART_CR1_TE + USART_CR1_RE;					// Habiliar recepcion y transmision
-	USART2->CR1 |= USART_CR1_RXNEIE;										// Interrupcion recepcion
-	USART2->CR1 |= USART_CR1_UE;												// Habilitar modulo UART (puerto serial)
-	
-	NVIC_EnableIRQ(USART2_IRQn);
-}
 
-
-void USART2_IRQHandler(void){
-	if(USART2->ISR & USART_ISR_RXNE){
-		data = USART2->RDR;
+void USART1_IRQHandler(void){
+	if(USART1->ISR & USART_ISR_RXNE){
+		data = USART1->RDR;
 		if(data != '\r'){
 			rx_buffer[n] = data;
 			n++;
@@ -73,8 +66,8 @@ void USART2_IRQHandler(void){
 
 
 void USART_Send(char c){
-	while(!(USART2->ISR & USART_ISR_TC));
-	USART2->TDR = c;
+	while(!(USART1->ISR & USART_ISR_TC));
+	USART1->TDR = c;
 }
 
 void USART_putString(char * string){
@@ -89,4 +82,25 @@ void tokenizer(void){
 	tokens[1] = strtok(NULL, " ");
 	tokens[2] = strtok(NULL, " ");
 	tokens[3] = strtok(NULL, " ");
+	tokens[4] = strtok(NULL, " ");
+	tokens[5] = strtok(NULL, " ");
+	tokens[6] = strtok(NULL, " ");
+	tokens[7] = strtok(NULL, " ");
+	tokens[8] = strtok(NULL, " ");
+	tokens[9] = strtok(NULL, " ");
+	tokens[10] = strtok(NULL, " ");
+	tokens[11] = strtok(NULL, " ");
+	tokens[12] = strtok(NULL, " ");
+	tokens[13] = strtok(NULL, " ");
+	tokens[14] = strtok(NULL, " ");
+	tokens[15] = strtok(NULL, " ");
+	tokens[16] = strtok(NULL, " ");
+	tokens[17] = strtok(NULL, " ");
+	tokens[18] = strtok(NULL, " ");
+	tokens[19] = strtok(NULL, " ");
+	tokens[20] = strtok(NULL, " ");
+	tokens[21] = strtok(NULL, " ");
+	tokens[22] = strtok(NULL, " ");
+	tokens[23] = strtok(NULL, " ");
+	tokens[24] = strtok(NULL, " ");
 }
