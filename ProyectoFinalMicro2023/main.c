@@ -65,6 +65,7 @@ int main(void){
 	Nokia5110_OutString((unsigned char *)"Jose Luis Diaz");
 	Nokia5110_OutString((unsigned char *)"Diego Ventura ");
 	Nokia5110_OutString((unsigned char *)"  Jose Ortiz  ");
+	Nokia5110_OutString((unsigned char *)"+------------+");
 	
 	while(1){
 		//freq_khz = (1.0f/period_us)*1000.0f;
@@ -114,7 +115,7 @@ void PWM_Init(void){
 	
 	TIM16->PSC = 15; // prescala de 16, fclk = 4 MHz
 	TIM16->ARR = 4000; // 4MHz/1kHz = 4000 cuentas, frecuencia de pwm 1 kHz
-	TIM16->CCR1 = 2000;	// ancho de pulso (duty cycle 50%) // Es en CCR1 porque es Channel 1 en TIM16CH1
+	TIM16->CCR1 = 0;	// ancho de pulso (duty cycle 50%) // Es en CCR1 porque es Channel 1 en TIM16CH1
 	// PWM mode 1 channel 3, Preload Enable
 	TIM16->CCMR1 |= TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1M_1| TIM_CCMR1_OC1PE;//CCMR1 porque usamos canal 1 o 2. CCMR2 es para 3 y 4
 	//ES LO MISMO QUE ;TIM16->CCMR1 |= (0x6<<4) + (1<<3);  //PWM Mode 1 (clear output on compare), Preload Enable
@@ -185,7 +186,9 @@ void read_command(void){
                 ioUnmap();
             } else if(!strcmp(tokens[0],"SEGMENT")||!strcmp(tokens[0],"segment")){
                 segmentOut();
-            } else if(!strcmp(tokens[0],"SOUND")||!strcmp(tokens[0],"sound")){
+            } else if(!strcmp(tokens[0],"LCD")||!strcmp(tokens[0],"lcd")){
+                lcdPrint();
+            }else if(!strcmp(tokens[0],"SOUND")||!strcmp(tokens[0],"sound")){
                 sound();
             } else if(!strcmp(tokens[0],"MUTE")||!strcmp(tokens[0],"mute")){
                 mute();
@@ -195,6 +198,8 @@ void read_command(void){
 							}else if(!strcmp(tokens[1],"0")){
 								LLedOff();
 							}
+            }else if(!strcmp(tokens[0],"test")||!strcmp(tokens[0],"test")){
+                printTest();
             }else if(!strcmp(tokens[0],"clear")||!strcmp(tokens[0],"CLEAR")){
                 USART_putString("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
             }else{

@@ -8,6 +8,8 @@
 		EXPORT	registerModifyAssemblyR7
 		EXPORT	registerModifyAssemblyR8
 		EXPORT	registerModifyAssemblyR9
+		EXPORT runAssembly
+		EXPORT callAssembly
 			
 			
 registerDisplayAssembly
@@ -65,6 +67,25 @@ registerModifyAssemblyR9
 	mov r9, r0
 	
 	pop{pc}
+	
+	
+	
+	
+runAssembly
+	orrs r0, r0, #1
+	
+	bx r0
+	
+	
+	
+	
+callAssembly
+	push{lr}
+	
+	blx r0
+	
+	pop{pc}
+	
 	
 
     

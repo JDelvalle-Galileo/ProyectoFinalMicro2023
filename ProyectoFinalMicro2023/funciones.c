@@ -1,5 +1,6 @@
 #include "funciones.h"
 #include "func_uart.h"
+#include "Nokia5110.h"					//Funciones de pantalla Nokia
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +12,8 @@ extern void registerModifyAssemblyR6(uint32_t value);
 extern void registerModifyAssemblyR7(uint32_t value);
 extern void registerModifyAssemblyR8(uint32_t value);
 extern void registerModifyAssemblyR9(uint32_t value);
+extern void runAssembly(uint32_t * address);
+extern void callAssembly(uint32_t * address);
 
 
 
@@ -41,8 +44,24 @@ extern char * tokens[];
 extern char tx_buffer[64];
 
 
+//paraLCD
+static char lcd_buffer[70];
 
-/* Function Definition*/
+//para run/call
+static uint32_t * jumpAddress;
+
+
+
+
+
+/* -------------- Function Definition -----------------*/
+
+
+/*para probar run y call*/
+void printTest(void){
+	USART_putString("Test Print \r\n");
+}
+
 
 
 /*REGISTERS*/
@@ -177,10 +196,18 @@ void blockFill(void){
 
 /*FUNCIONES*/
 void run(void){
-	USART_putString("Run! \r\n");
+	jumpAddress = (uint32_t *)strtol(&tokens[1][0], NULL, 16);
+	sprintf(tx_buffer, "Saltando run a %#010x \r\n", jumpAddress);
+	USART_putString(tx_buffer);
+	runAssembly(jumpAddress);
+	USART_putString("Al salir de run \r\n");
 }
 void call(void){
-	USART_putString("Call! \r\n");
+	jumpAddress =(uint32_t *)strtol(&tokens[1][0], NULL, 16);
+	sprintf(tx_buffer, "Saltando call a %#010x \r\n", jumpAddress);
+	USART_putString(tx_buffer);
+	runAssembly(jumpAddress);
+	USART_putString("Al salir de call \r\n");
 }
 void ioMap(void){
 	USART_putString("I/O Map! \r\n");
@@ -193,6 +220,36 @@ void segmentOut(void){
 }
 void lcdPrint(void){
 	USART_putString("LCD Print! \r\n");
+	//char * putString = " ";
+	if(tokens[1]==NULL) tokens[1] = " ";
+	if(tokens[2]==NULL) tokens[2] = " ";
+	if(tokens[3]==NULL) tokens[3] = " ";
+	if(tokens[3]==NULL) tokens[4] = " ";
+	if(tokens[3]==NULL) tokens[5] = " ";
+	if(tokens[3]==NULL) tokens[6] = " ";
+	if(tokens[3]==NULL) tokens[7] = " ";
+	if(tokens[3]==NULL) tokens[8] = " ";
+	if(tokens[3]==NULL) tokens[9] = " ";
+	if(tokens[3]==NULL) tokens[10] = " ";
+	if(tokens[3]==NULL) tokens[11] = " ";
+	if(tokens[3]==NULL) tokens[12] = " ";
+	sprintf(lcd_buffer, "%s %s %s %s %s %s %s %s %s %s %s %s",
+	tokens[1],tokens[2],tokens[3],tokens[4],tokens[5],tokens[6],
+	tokens[7],tokens[8],tokens[9],tokens[10],tokens[11],tokens[12]);
+	USART_putString(lcd_buffer);
+	USART_putString("\r\n");
+	sprintf(tx_buffer, "%.70s", lcd_buffer);
+	USART_putString(tx_buffer);
+	USART_putString("\r\n");
+	/*if(tokens[1]!=0x00000000 && tokens[2]!=0x00000000 && tokens[3]!=0x00000000 &&  tokens[4]!=0x00000000){
+		sprintf(putString, "%s %s %s %s %s", tokens[1],tokens[2],tokens[3],tokens[4]);
+		Nokia5110_Clear();
+		Nokia5110_SetCursor(0,1);
+		Nokia5110_OutString(putString);
+	}*/
+	Nokia5110_Clear();
+	Nokia5110_SetCursor(0,0);
+	Nokia5110_OutString((unsigned char *)tx_buffer);
 }
 void sound(void){
 	sprintf(tx_buffer,"Sound frecuencia %sHz \r\n",tokens[1]);
@@ -207,6 +264,12 @@ void mute(void){
 	PWM_SetDutyCycle(0); 
 }
 
+
+
+
+
+
+/*para buzzer*/
 void PWM_SetFrequency(float freq_hz){
 	dc = (2000000/freq_hz)-1;
 	TIM16->ARR = (4000000/freq_hz)-1;
@@ -216,4 +279,13 @@ void PWM_SetFrequency(float freq_hz){
 void PWM_SetDutyCycle(float dc_ms){
 	dc = (SystemCoreClock/64)/((uint32_t)(1000/dc_ms));
 	TIM16->CCR1 = dc;
+}
+
+
+
+
+
+//para HardFaultException
+void Fault(void){
+	USART_putString("Hard Fault, restart! \r\n");
 }

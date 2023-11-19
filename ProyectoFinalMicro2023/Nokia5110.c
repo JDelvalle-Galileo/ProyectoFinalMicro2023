@@ -147,9 +147,9 @@ void Nokia5110_Init(void){
 	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;																// SPI1 clk enable
 	GPIOB->MODER |= (0x2<<6)|(0x2<<10);																// PTB3,5 as alternate function
 	GPIOB->AFR[0]|= (0x5<<12)|(0x5<<20);															// PTB3,5 as SPI
-	//GPIOB->MODER |= (0x1<<8);																					// PTB4 as GPIO output (SCE)													
+	//GPIOB->MODER |= (0x1<<8);																				// PTB4 as GPIO output (SCE)													
 	GPIOA->MODER |= (0x1<<22);																				// PTA11 as GPIO output (D/C) 
-	//GPIOB->ODR &= ~(1<<4);																						// SCE
+	//GPIOB->ODR &= ~(1<<4);																					// SCE
 	
 	SPI1->CR1 |= SPI_CR1_MSTR | SPI_CR1_BR_2;													// Master, f=8MHz/32=250 kHz		
 	SPI1->CR2 |= SPI_CR2_NSSP |SPI_CR2_SSOE; 													// 8 bits, output enable
