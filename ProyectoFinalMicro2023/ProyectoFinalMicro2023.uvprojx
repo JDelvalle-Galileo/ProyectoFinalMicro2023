@@ -437,6 +437,9 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>I2C</GroupName>
+        </Group>
+        <Group>
           <GroupName>::CMSIS</GroupName>
         </Group>
         <Group>

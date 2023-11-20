@@ -8,7 +8,7 @@ char data;
 uint8_t n = 0;
 uint8_t cmd_ready = 0;
 char tx_buffer[64];
-char rx_buffer[32];
+char rx_buffer[64];
 
 char * tokens[] = {" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "};
 
@@ -91,16 +91,4 @@ void tokenizer(void){
 	tokens[10] = strtok(NULL, " ");
 	tokens[11] = strtok(NULL, " ");
 	tokens[12] = strtok(NULL, " ");
-	tokens[13] = strtok(NULL, " ");
-	tokens[14] = strtok(NULL, " ");
-	tokens[15] = strtok(NULL, " ");
-	tokens[16] = strtok(NULL, " ");
-	tokens[17] = strtok(NULL, " ");
-	tokens[18] = strtok(NULL, " ");
-	tokens[19] = strtok(NULL, " ");
-	tokens[20] = strtok(NULL, " ");
-	tokens[21] = strtok(NULL, " ");
-	tokens[22] = strtok(NULL, " ");
-	tokens[23] = strtok(NULL, " ");
-	tokens[24] = strtok(NULL, " ");
 }

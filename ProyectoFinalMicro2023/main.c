@@ -8,6 +8,7 @@
 #include <string.h>
 
 
+#define 	SLAVE_ADDR		0x40
 
 
 
@@ -17,6 +18,10 @@ void IC_Init(void);
 void read_command(void);
 void LLedOn(void);
 void LLedOff(void);
+void io(void);
+void I2C_Write(char slave, char addr, char dataI);
+void I2C_Read(char slave, char addr, char * dataI);
+
 
 
 static float period_us = 0.0f;
@@ -28,6 +33,7 @@ static uint16_t capture_rise_ant = 0;
 static uint16_t capture_fall = 0;
 static uint32_t count = 0;
 static uint64_t i = 0;
+static uint32_t ticks;
 
 extern char data;
 extern uint8_t n;
@@ -57,7 +63,6 @@ int main(void){
 	
 	Nokia5110_Init();
 	for(i=0;i<200;i++);
-	//SysTick_Config(SystemCoreClock/6);
 	Nokia5110_Clear();
 	//Nokia5110_OutString((unsigned char *)"12345678901234");
 	Nokia5110_OutString((unsigned char *)"Univ. Galileo ");
@@ -67,11 +72,80 @@ int main(void){
 	Nokia5110_OutString((unsigned char *)"  Jose Ortiz  ");
 	Nokia5110_OutString((unsigned char *)"+------------+");
 	
+	SysTick_Config(SystemCoreClock/10);
+	
+	
+	//SysTick_Config(SystemCoreClock/10);
 	while(1){
 		//freq_khz = (1.0f/period_us)*1000.0f;
 		//duty_cycle = ap_us/period_us;
 		read_command();
 	}
+}
+
+void SysTick_Handler(void){
+	char switchState;
+	I2C_Read(SLAVE_ADDR, 0x13, &switchState);
+	ticks++;
+	if(!(switchState & (1<<0))){
+	I2C_Write(SLAVE_ADDR, 0x12, 0xFE);
+	}
+	else if(!(switchState & (1<<1))){
+	I2C_Write(SLAVE_ADDR, 0x12, 0xFD);
+	}
+	else if(!(switchState & (0x4<<0))){
+	I2C_Write(SLAVE_ADDR, 0x12, 0xFB);
+	}
+	else if(!(switchState & (0x8<<0))){
+	I2C_Write(SLAVE_ADDR, 0x12, 0xF7);
+	}
+	else if(!(switchState & (0x10<<0))){
+	I2C_Write(SLAVE_ADDR, 0x12,0xEF);
+	}
+	else if(!(switchState & (0x20<<0))){
+	I2C_Write(SLAVE_ADDR, 0x12,0xDF);
+	}
+	else if(!(switchState & (0x40<<0))){
+	I2C_Write(SLAVE_ADDR, 0x12,0xBF);
+	}
+	else if(!(switchState & (0x80<<0))){
+	I2C_Write(SLAVE_ADDR, 0x12,0x7F);
+	}
+	else{
+	I2C_Write(SLAVE_ADDR, 0x12,0xFF);
+	}
+}
+
+
+
+
+/* funciones de ayuda IO*/
+void I2C_Write(char slave, char addr, char dataI){
+	//USART_putString("Dentro de I2c write \r\n");
+	// AutoEND, Reload, 2 bytes
+	I2C1->CR2 = 0x00;
+	I2C1->CR2 = I2C_CR2_AUTOEND | (2<<16) | (slave) | I2C_CR2_START;
+	while(!(I2C1->ISR && I2C_ISR_TXIS));
+	I2C1->TXDR = addr;
+	while(!(I2C1->ISR && I2C_ISR_TXIS));
+	I2C1->TXDR = data;
+	while(!(I2C1->ISR && I2C_ISR_TXE));
+	//USART_putString("Saliendo de I2c write \r\n");
+}
+
+void I2C_Read(char slave, char addr, char * dataI){
+	// AutoEND, Reload, 1 bytes
+	//USART_putString("Dentro de I2c READ \r\n");
+	I2C1->CR2 = 0x00;
+	I2C1->CR2 = I2C_CR2_AUTOEND | (1<<16) | (slave) | I2C_CR2_START;
+	while(!(I2C1->ISR && I2C_ISR_TXIS));
+	I2C1->TXDR = addr;
+	while(!(I2C1->ISR && I2C_ISR_TXE));
+	I2C1->CR2 = 0x00;
+	I2C1->CR2 |= I2C_CR2_AUTOEND | (1<<16) | I2C_CR2_RD_WRN | (slave) | I2C_CR2_START;
+	while(!(I2C1->ISR && I2C_ISR_RXNE));
+	*dataI = I2C1->RXDR;
+	//USART_putString("Saliendo de I2c REad \r\n");
 }
 
 
@@ -91,7 +165,7 @@ void clk_config(void){
 }
 
 void TIM3_IRQHandler(void){
-		count++;
+		//count++;
 		if(TIM3->SR & TIM_SR_CC3IF){	//ocurrio una captura en IC3 (flanco de subida)
 			capture_rise = TIM3->CCR3;
 			if((capture_rise-capture_rise_ant>0))
@@ -166,46 +240,45 @@ void read_command(void){
         tokenizer();
 			
 
-            if(!strcmp(tokens[0],"RD")||!strcmp(tokens[0],"rd")){
-                registerDisplay();
-            }else if(!strcmp(tokens[0],"RM")||!strcmp(tokens[0],"rm")){
-                registerModify();
-            } else if(!strcmp(tokens[0],"MD")||!strcmp(tokens[0],"md")){
-                memoryDisplay();
-            } else if(!strcmp(tokens[0],"MM")||!strcmp(tokens[0],"mm")){
-                memoryModify();
-            } else if(!strcmp(tokens[0],"BF")||!strcmp(tokens[0],"bf")){
-                blockFill();
-            } else if(!strcmp(tokens[0],"RUN")||!strcmp(tokens[0],"run")){
-                run();
-            } else if(!strcmp(tokens[0],"CALL")||!strcmp(tokens[0],"call")){
-                call();
-            } else if(!strcmp(tokens[0],"IOMAP")||!strcmp(tokens[0],"iomap")){
-                ioMap();
-            } else if(!strcmp(tokens[0],"IOUNMAP")||!strcmp(tokens[0],"iounmap")){
-                ioUnmap();
-            } else if(!strcmp(tokens[0],"SEGMENT")||!strcmp(tokens[0],"segment")){
-                segmentOut();
-            } else if(!strcmp(tokens[0],"LCD")||!strcmp(tokens[0],"lcd")){
-                lcdPrint();
-            }else if(!strcmp(tokens[0],"SOUND")||!strcmp(tokens[0],"sound")){
-                sound();
-            } else if(!strcmp(tokens[0],"MUTE")||!strcmp(tokens[0],"mute")){
-                mute();
-            } else if(!strcmp(tokens[0],"LLED")||!strcmp(tokens[0],"lled")){
-							if(!strcmp(tokens[1],"1")){
-								LLedOn();
-							}else if(!strcmp(tokens[1],"0")){
-								LLedOff();
-							}
-            }else if(!strcmp(tokens[0],"test")||!strcmp(tokens[0],"test")){
-                printTest();
-            }else if(!strcmp(tokens[0],"clear")||!strcmp(tokens[0],"CLEAR")){
-                USART_putString("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-            }else{
-                USART_putString("¡Comando indefinido! \r\n");
-            }
-
+				if(!strcmp(tokens[0],"RD")||!strcmp(tokens[0],"rd")){
+						registerDisplay();
+				}else if(!strcmp(tokens[0],"RM")||!strcmp(tokens[0],"rm")){
+						registerModify();
+				} else if(!strcmp(tokens[0],"MD")||!strcmp(tokens[0],"md")){
+						memoryDisplay();
+				} else if(!strcmp(tokens[0],"MM")||!strcmp(tokens[0],"mm")){
+						memoryModify();
+				} else if(!strcmp(tokens[0],"BF")||!strcmp(tokens[0],"bf")){
+						blockFill();
+				} else if(!strcmp(tokens[0],"RUN")||!strcmp(tokens[0],"run")){
+						run();
+				} else if(!strcmp(tokens[0],"CALL")||!strcmp(tokens[0],"call")){
+						call();
+				} else if(!strcmp(tokens[0],"IOMAP")||!strcmp(tokens[0],"iomap")){
+						ioMap();
+				} else if(!strcmp(tokens[0],"IOUNMAP")||!strcmp(tokens[0],"iounmap")){
+						ioUnmap();
+				} else if(!strcmp(tokens[0],"SEGMENT")||!strcmp(tokens[0],"segment")){
+						segmentOut();
+				} else if(!strcmp(tokens[0],"LCD")||!strcmp(tokens[0],"lcd")){
+						lcdPrint();
+				}else if(!strcmp(tokens[0],"SOUND")||!strcmp(tokens[0],"sound")){
+						sound();
+				} else if(!strcmp(tokens[0],"MUTE")||!strcmp(tokens[0],"mute")){
+						mute();
+				} else if(!strcmp(tokens[0],"LLED")||!strcmp(tokens[0],"lled")){
+					if(!strcmp(tokens[1],"1")){
+						LLedOn();
+					}else if(!strcmp(tokens[1],"0")){
+						LLedOff();
+					}
+				}else if(!strcmp(tokens[0],"test")||!strcmp(tokens[0],"test")){
+						printTest();
+				}else if(!strcmp(tokens[0],"clear")||!strcmp(tokens[0],"CLEAR")){
+						USART_putString("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+				}else{
+						USART_putString("¡Comando indefinido! \r\n");
+				}
         USART_putString("\n>> ");
         cmd_ready = 0;
     } 
@@ -225,75 +298,29 @@ void LLedOff(void){
 
 
 
-/*
-void USART_config(uint32_t baudrate){
-	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;						//Clock Enbale GPIOA
-	RCC->APB1ENR |= RCC_APB1ENR_USART2EN;					//Clock Enbale USART2
-
-	GPIOA->MODER |= (0x02<<4) | (0x02<<30);				//Alternate Function PA2 & PA15
-	GPIOA->AFR[0] |= (0x07<<8);									  //PA2 as TX2
-	GPIOA->AFR[1] |= (0x07<<28);									//PA15 as RX2
-	
-	USART2->BRR = (uint32_t)(SystemCoreClock/baudrate);  //round( 8MHz/115200)
-	USART2->CR1 |= USART_CR1_TE + USART_CR1_RE;					// Habiliar recepcion y transmision
-	USART2->CR1 |= USART_CR1_RXNEIE;										// Interrupción recepcion
-	USART2->CR1 |= USART_CR1_UE;												// Habilitar modulo UART (puerto serial)
-	
-	NVIC_EnableIRQ(USART2_IRQn);
+/*void I2C_Write(char slave, char addr, char data){
+	// AutoEND, Reload, 2 bytes
+	I2C1->CR2 = 0x00;
+	I2C1->CR2 = I2C_CR2_AUTOEND | (2<<16) | (slave) | I2C_CR2_START;
+	while(!(I2C1->ISR& I2C_ISR_TXIS));
+	I2C1->TXDR = addr;
+	while(!(I2C1->ISR& I2C_ISR_TXIS));
+	I2C1->TXDR = data;
+	while(!(I2C1->ISR& I2C_ISR_TXE));
 }
 
-
-//PA2 USART2_TX y PA15 USART2_RX		//Ambos son funcion 7
-void USART2_Enable_Pins(uint32_t baudrate){
-	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;	//Habilitamos reloj a GPIOA
-	RCC->APB1ENR |= RCC_APB1ENR_USART2EN; //Clock Enbale USART2
-	
-	GPIOA->MODER |= (2<<4)|(2<<30); //Funci?n alternativa del pin 2 y 15
-	GPIOA->AFR[0] |= (7<<8); //Funccion alternativa 7 del pin 2 
-	GPIOA->AFR[1] |= (7<<28); //Funccion alternativa 7 del pin 15 
-	
-	USART2->BRR = (uint32_t)(SystemCoreClock/baudrate);  //round( 64MHz/115200)
-	USART2->CR1 |= USART_CR1_TE + USART_CR1_RE;					// Habiliar recepcion y transmision
-	USART2->CR1 |= USART_CR1_RXNEIE;										// Interrupcion recepcion
-	USART2->CR1 |= USART_CR1_UE;												// Habilitar modulo UART (puerto serial)
-	
-	NVIC_EnableIRQ(USART2_IRQn);
-}
-
-
-void USART2_IRQHandler(void){
-	if(USART2->ISR & USART_ISR_RXNE){
-		data = USART2->RDR;
-		if(data != '\r'){
-			rx_buffer[n] = data;
-			n++;
-			cmd_ready = 0;
-		}else{
-			rx_buffer[n] = '\0';
-			n = 0;
-			cmd_ready = 1;
-		}
-	}
-}
+void I2C_Read(char slave, char addr, char * data){
+	// AutoEND, Reload, 1 bytes
+	I2C1->CR2 = 0x00;
+	I2C1->CR2 = I2C_CR2_AUTOEND | (1<<16) | (slave) | I2C_CR2_START;
+	while(!(I2C1->ISR& I2C_ISR_TXIS));
+	I2C1->TXDR = addr;
+	while(!(I2C1->ISR& I2C_ISR_TXE));
+	I2C1->CR2 = 0x00;
+	I2C1->CR2 |= I2C_CR2_AUTOEND | (1<<16) | I2C_CR2_RD_WRN | (slave) | I2C_CR2_START;
+	while(!(I2C1->ISR& I2C_ISR_RXNE));
+	*data = I2C1->RXDR;
+}*/
 
 
 
-void USART_Send(char c){
-	while(!(USART2->ISR & USART_ISR_TC));
-	USART2->TDR = c;
-}
-
-void USART_putString(char * string){
-	while(*string){
-		USART_Send(*string);
-		string++;
-	}
-}
-
-void tokenizer(void){
-	tokens[0] = strtok(rx_buffer, " ");
-	tokens[1] = strtok(NULL, " ");
-	tokens[2] = strtok(NULL, " ");
-	tokens[3] = strtok(NULL, " ");
-}
-*/
